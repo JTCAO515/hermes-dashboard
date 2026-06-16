@@ -1310,55 +1310,14 @@ function render() {
                    : sourceKey.includes('qq') ? '🐧'
                    : '📨';
         return `
-          <div class="conv-session" onclick="
-            var el = document.getElementById('conv-${s.id}');
-            if (el) {
-              if (el.classList.contains('open')) {
-                el.classList.remove('open');
-              } else {
-                el.classList.add('open');
-                if (!el.hasAttribute('data-loaded')) {
-                  el.setAttribute('data-loaded', 'true');
-                  el.innerHTML = '<div style=\"font-size:10px;color:var(--text-quaternary);padding:4px\">Loading...</div>';
-                  fetch('${API}/conversations/${encodeURIComponent(s.id)}')
-                    .then(r => r.json())
-                    .then(d => {
-                      if (d.error) {
-                        el.innerHTML = '<div style=\"font-size:11px;color:var(--red);padding:4px\">❌ ' + d.error + '</div>';
-                        return;
-                      }
-                      var msgs = d.messages || [];
-                      el.innerHTML = msgs.map(function(m) {
-                        var roleClass = m.role === 'user' ? 'conv-msg-user' : 'conv-msg-assistant';
-                        var roleLabel = m.role === 'user' ? '👤 User' : '🤖 Agent';
-                        var body = (m.content || '').substring(0, 300);
-                        return '<div class=\"conv-msg\">' +
-                          '<div class=\"conv-msg-role ' + roleClass + '\">' + roleLabel + ' <span class=\"conv-msg-time\">' + (m.time || '') + '</span></div>' +
-                          '<div class=\"conv-msg-body\">' + escapeHtml(body) + '</div>' +
-                          '</div>';
-                      }).join('');
-                      if (msgs.length === 0) {
-                        el.innerHTML = '<div style=\"font-size:11px;color:var(--text-quaternary);padding:4px\">No messages</div>';
-                      }
-                    })
-                    .catch(function(err) {
-                      el.innerHTML = '<div style=\"font-size:11px;color:var(--red);padding:4px\">❌ Failed to load: ' + err.message + '</div>';
-                    });
-                }
-              }
-            }
-          ">
+          <div class="conv-session" data-sess-id="${s.id}">
             <div class="conv-session-header">
               <span>${icon}</span>
               <span class="conv-session-source">${s.source_label || '?'}</span>
               <span class="conv-session-title">${s.title || '(无标题)'}</span>
               <span class="conv-session-meta">${s.message_count || 0} msgs &middot; ${(s.started_at || '').substring(0,16)}</span>
             </div>
-            <div class="conv-messages" id="conv-${s.id}">
-              <div style="font-size:10px;color:var(--text-quaternary);padding:4px">
-                Loading full conversation... <a href="${API}/conversations/${s.id}" target="_blank" style="color:var(--accent-bright)">(API)</a>
-              </div>
-            </div>
+            <div class="conv-messages" id="conv-${s.id.replace(/[^a-zA-Z0-9_-]/g, '')}"></div>
           </div>
         `;
       }).join('')}
@@ -1372,6 +1331,58 @@ function render() {
 // Initial load + auto-refresh
 refresh();
 setInterval(refresh, 30000);
+
+// Conversation session click handler (event delegation)
+document.getElementById('convContent').addEventListener('click', function(e) {
+  var session = e.target.closest('.conv-session');
+  if (!session) return;
+
+  var msgBox = session.querySelector('.conv-messages');
+  if (!msgBox) return;
+
+  if (msgBox.classList.contains('open')) {
+    msgBox.classList.remove('open');
+    return;
+  }
+
+  msgBox.classList.add('open');
+
+  if (msgBox.hasAttribute('data-loaded')) return;
+  msgBox.setAttribute('data-loaded', 'true');
+  msgBox.textContent = 'Loading...';
+
+  var sid = session.getAttribute('data-sess-id');
+  if (!sid) { msgBox.textContent = 'Error: no session ID'; return; }
+
+  fetch('/api/hermes/conversations/' + encodeURIComponent(sid))
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error) {
+        msgBox.innerHTML = '<div style="font-size:11px;color:var(--red);padding:4px">❌ ' + d.error + '</div>';
+        return;
+      }
+      var msgs = d.messages || [];
+      if (msgs.length === 0) {
+        msgBox.innerHTML = '<div style="font-size:11px;color:var(--text-quaternary);padding:4px">No messages</div>';
+        return;
+      }
+      var html = '';
+      for (var i = 0; i < msgs.length; i++) {
+        var m = msgs[i];
+        var roleClass = m.role === 'user' ? 'conv-msg-user' : 'conv-msg-assistant';
+        var roleLabel = m.role === 'user' ? '👤 User' : '🤖 Agent';
+        var body = (m.content || '').substring(0, 300);
+        html += '<div class="conv-msg">' +
+          '<div class="conv-msg-role ' + roleClass + '">' + roleLabel + ' <span class="conv-msg-time">' + (m.time || '') + '</span></div>' +
+          '<div class="conv-msg-body">' + escapeHtml(body) + '</div>' +
+          '</div>';
+      }
+      msgBox.innerHTML = html;
+    })
+    .catch(function(err) {
+      msgBox.innerHTML = '<div style="font-size:11px;color:var(--red);padding:4px">❌ ' + err.message + '</div>';
+    });
+});
 </script>
 </body>
 </html>
