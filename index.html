@@ -706,6 +706,107 @@ body::before {
   margin-top: 8px;
 }
 
+/* ── Conversation display ── */
+.conv-summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.conv-stat {
+  background: var(--bg-elevated);
+  border-radius: 8px;
+  padding: 12px 16px;
+  flex: 1;
+  min-width: 120px;
+}
+.conv-stat-value { font-size: 22px; font-weight: 600; color: var(--accent-bright); }
+.conv-stat-label { font-size: 11px; color: var(--text-quaternary); margin-top: 2px; }
+
+.conv-session {
+  font-size: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.conv-session:hover { background: var(--bg-card-hover); border-radius: 4px; padding: 8px 6px; margin: 0 -6px; }
+.conv-session:last-child { border-bottom: none; }
+.conv-session-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.conv-session-source {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  background: rgba(94,106,210,0.15);
+  color: #828fff;
+  flex-shrink: 0;
+}
+.conv-session-title {
+  flex: 1;
+  color: var(--text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.conv-session-meta {
+  font-size: 10px;
+  color: var(--text-quaternary);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+.conv-messages {
+  display: none;
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 6px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.conv-messages.open { display: block; }
+.conv-msg {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.conv-msg:last-child { border-bottom: none; }
+.conv-msg-role {
+  font-weight: 600;
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+.conv-msg-user { color: #22c55e; }
+.conv-msg-assistant { color: #828fff; }
+.conv-msg-time { font-size: 9px; color: var(--text-quaternary); font-family: var(--font-mono); margin-left: 4px; }
+.conv-msg-body {
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.conv-download {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--accent-bright);
+  text-decoration: none;
+  padding: 6px 12px;
+  border: 1px solid rgba(94,106,210,0.3);
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.conv-download:hover {
+  background: var(--accent-glow);
+  border-color: var(--accent-bright);
+}
+
 /* Empty state */
 .empty-state {
   text-align: center;
@@ -857,6 +958,16 @@ body::before {
         <div class="card-body" id="issueContent">
           <div class="loading-state" style="padding:20px"><div class="loading-text">Loading…</div></div>
         </div>
+      </div>
+    </div>
+
+    <div class="card" id="convCard">
+      <div class="card-header">
+        <span class="card-title">💬 Conversations — Full History</span>
+        <span class="card-icon">📜</span>
+      </div>
+      <div class="card-body" id="convContent">
+        <div class="loading-state" style="padding:20px"><div class="loading-text">Loading…</div></div>
       </div>
     </div>
 
@@ -1156,6 +1267,67 @@ function render() {
         `;
       }).join('')
     : '<div class="empty-state">No issues detected</div>';
+
+  // ── Conversations ──
+  const conv = data.conversations || {};
+  const totalSessions = conv.total_sessions || 0;
+  const totalMessages = conv.total_messages || 0;
+  const latestSessions = conv.latest || [];
+
+  document.getElementById('convContent').innerHTML = `
+    <div class="conv-summary">
+      <div class="conv-stat">
+        <div class="conv-stat-value">${totalSessions.toLocaleString()}</div>
+        <div class="conv-stat-label">Sessions</div>
+      </div>
+      <div class="conv-stat">
+        <div class="conv-stat-value">${totalMessages.toLocaleString()}</div>
+        <div class="conv-stat-label">Messages</div>
+      </div>
+      <div class="conv-stat">
+        <div class="conv-stat-value">${totalMessages > 0 ? (totalMessages / totalSessions).toFixed(0) : '-'}</div>
+        <div class="conv-stat-label">Avg msgs/session</div>
+      </div>
+    </div>
+    <div style="margin-bottom:8px;font-size:10px;color:var(--text-quaternary)">
+      Last updated: ${conv.generated_at || '?'}
+    </div>
+    ${latestSessions.length ? `
+      <div style="font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">
+        📌 Latest Sessions
+      </div>
+      ${latestSessions.map(s => {
+        const sourceKey = (s.source_label || '').toLowerCase();
+        const icon = sourceKey.includes('wechat') || sourceKey.includes('微信') ? '💬'
+                   : sourceKey.includes('元宝') || sourceKey.includes('wecom') ? '📱'
+                   : sourceKey.includes('cron') || sourceKey.includes('定时') ? '⏰'
+                   : sourceKey.includes('cli') || sourceKey.includes('终端') ? '🖥'
+                   : sourceKey.includes('qq') ? '🐧'
+                   : '📨';
+        return `
+          <div class="conv-session" onclick="
+            var el = document.getElementById('conv-${s.id}');
+            if (el) el.classList.toggle('open');
+          ">
+            <div class="conv-session-header">
+              <span>${icon}</span>
+              <span class="conv-session-source">${s.source_label || '?'}</span>
+              <span class="conv-session-title">${s.title || '(无标题)'}</span>
+              <span class="conv-session-meta">${s.message_count || 0} msgs &middot; ${(s.started_at || '').substring(0,16)}</span>
+            </div>
+            <div class="conv-messages" id="conv-${s.id}">
+              <div style="font-size:10px;color:var(--text-quaternary);padding:4px">
+                Loading full conversation... <a href="${API}/conversations/${s.id}" target="_blank" style="color:var(--accent-bright)">(API)</a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    ` : '<div class="empty-state">No conversations exported yet</div>'}
+    <div style="margin-top:12px">
+      <a class="conv-download" href="/api/hermes/conversations" target="_blank">📡 API: All Sessions (summary)</a>
+    </div>
+  `;
 }
 
 // Initial load + auto-refresh
