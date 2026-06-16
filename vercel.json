@@ -4,7 +4,7 @@
     { "src": "**/*", "use": "@vercel/static" }
   ],
   "rewrites": [
-    { "source": "/api/hermes/(.*)", "destination": "http://64.176.82.81:8504/api/hermes/$1" },
+    { "source": "/api/hermes/(.*)", "destination": "http://122.51.121.116:8504/api/hermes/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
