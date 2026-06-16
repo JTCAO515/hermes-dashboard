@@ -985,6 +985,11 @@ const API = (window.location.hostname === 'localhost' || window.location.hostnam
 
 let data = null;
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function fmtBytes(b) {
   if (!b || b === 0) return '0 B';
   const u = ['B','KB','MB','GB'];
@@ -1307,7 +1312,41 @@ function render() {
         return `
           <div class="conv-session" onclick="
             var el = document.getElementById('conv-${s.id}');
-            if (el) el.classList.toggle('open');
+            if (el) {
+              if (el.classList.contains('open')) {
+                el.classList.remove('open');
+              } else {
+                el.classList.add('open');
+                if (!el.hasAttribute('data-loaded')) {
+                  el.setAttribute('data-loaded', 'true');
+                  el.innerHTML = '<div style=\"font-size:10px;color:var(--text-quaternary);padding:4px\">Loading...</div>';
+                  fetch('${API}/conversations/${encodeURIComponent(s.id)}')
+                    .then(r => r.json())
+                    .then(d => {
+                      if (d.error) {
+                        el.innerHTML = '<div style=\"font-size:11px;color:var(--red);padding:4px\">❌ ' + d.error + '</div>';
+                        return;
+                      }
+                      var msgs = d.messages || [];
+                      el.innerHTML = msgs.map(function(m) {
+                        var roleClass = m.role === 'user' ? 'conv-msg-user' : 'conv-msg-assistant';
+                        var roleLabel = m.role === 'user' ? '👤 User' : '🤖 Agent';
+                        var body = (m.content || '').substring(0, 300);
+                        return '<div class=\"conv-msg\">' +
+                          '<div class=\"conv-msg-role ' + roleClass + '\">' + roleLabel + ' <span class=\"conv-msg-time\">' + (m.time || '') + '</span></div>' +
+                          '<div class=\"conv-msg-body\">' + escapeHtml(body) + '</div>' +
+                          '</div>';
+                      }).join('');
+                      if (msgs.length === 0) {
+                        el.innerHTML = '<div style=\"font-size:11px;color:var(--text-quaternary);padding:4px\">No messages</div>';
+                      }
+                    })
+                    .catch(function(err) {
+                      el.innerHTML = '<div style=\"font-size:11px;color:var(--red);padding:4px\">❌ Failed to load: ' + err.message + '</div>';
+                    });
+                }
+              }
+            }
           ">
             <div class="conv-session-header">
               <span>${icon}</span>

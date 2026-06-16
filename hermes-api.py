@@ -210,13 +210,13 @@ class HermesAPIHandler(BaseHTTPRequestHandler):
                 "generated_at": data.get("generated_at", ""),
                 "latest": [
                     {
-                        "id": s["id"][:20],
+                        "id": s["id"],
                         "source_label": s.get("source_label", s.get("source", "?")),
                         "title": s.get("title", "(无标题)")[:60],
                         "started_at": s.get("started_at", ""),
                         "message_count": s.get("message_count", 0),
                     }
-                    for s in (data.get("sessions") or [])[:5]
+                    for s in (data.get("sessions") or [])[:10]
                 ],
             }
         except:
