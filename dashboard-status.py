@@ -67,16 +67,17 @@ def get_cross_project_issues():
             continue
         
         # Look for TODO/FIXME/BUG/HACK in recent commits
-        commits = run_lines(f"cd {proj_dir} && git log --all --oneline -20 --grep='fix\\|bug\\|error\\|hotfix\\|patch\\|issue' 2>/dev/null", timeout=5)
+        commits = run_lines(f"cd {proj_dir} && git log --all --oneline -20 --format='%h|%s|%at|%ar' --grep='fix\\|bug\\|error\\|hotfix\\|patch\\|issue' 2>/dev/null", timeout=5)
         for c in commits[:5]:
-            parts = c.split(" ", 1)
-            if len(parts) == 2:
+            parts = c.split("|")
+            if len(parts) >= 4:
                 issues.append({
                     "project": proj_name,
                     "type": "fix",
                     "hash": parts[0],
                     "message": parts[1],
-                    "time": run(f"cd {proj_dir} && git log -1 --format=%ar {parts[0]} 2>/dev/null", timeout=3)
+                    "timestamp": int(parts[2]),
+                    "time": parts[3],
                 })
         
         # Check for uncommitted changes
@@ -88,7 +89,8 @@ def get_cross_project_issues():
                     "project": proj_name,
                     "type": "dirty",
                     "message": f"{dirty_count} uncommitted file(s)",
-                    "time": "now"
+                    "timestamp": int(time.time()),
+                    "time": "now",
                 })
     
     return issues
@@ -126,16 +128,17 @@ def get_task_history():
         proj_dir = os.path.join(PROJECTS_DIR, proj_name)
         if not os.path.isdir(proj_dir) or proj_name.startswith("."):
             continue
-        recent = run_lines(f"cd {proj_dir} && git log --since='24 hours ago' --oneline -5 2>/dev/null", timeout=5)
-        for c in recent[:3]:
-            parts = c.split(" ", 1)
-            if len(parts) == 2:
+        recent = run_lines(f"cd {proj_dir} && git log --since='168 hours ago' --oneline -10 --format='%h|%s|%at|%ar' 2>/dev/null", timeout=5)
+        for c in recent[:5]:
+            parts = c.split("|")
+            if len(parts) >= 4:
                 tasks.append({
                     "type": "commit",
                     "project": proj_name,
                     "message": parts[1],
                     "hash": parts[0],
-                    "time": run(f"cd {proj_dir} && git log -1 --format=%ar {parts[0]} 2>/dev/null", timeout=3)
+                    "timestamp": int(parts[2]),
+                    "time": parts[3],
                 })
     
     return tasks
@@ -196,9 +199,10 @@ def generate_status():
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "generated_at_local": time.strftime("%Y-%m-%d %H:%M:%S"),
         "memory": get_memory(),
-        "cross_project_issues": get_cross_project_issues(),
-        "task_history": sorted(get_task_history(), 
-            key=lambda x: x.get("time", ""), reverse=True)[:30],
+        "cross_project_issues": sorted(get_cross_project_issues(),
+            key=lambda x: x.get("timestamp", 0), reverse=True)[:30],
+        "task_history": sorted(get_task_history(),
+            key=lambda x: x.get("timestamp", 0), reverse=True)[:30],
         "recent_sessions": get_recent_sessions(),
         "errors": get_error_summary(),
     }

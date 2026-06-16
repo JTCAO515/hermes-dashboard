@@ -244,24 +244,27 @@ class HermesAPIHandler(BaseHTTPRequestHandler):
     def get_recent_activity(self):
         recent = []
         
-        # Recent git commits across projects
+        # Recent git commits across projects — collect all then sort by time
         for name in sorted(os.listdir(PROJECTS_DIR)):
             d = os.path.join(PROJECTS_DIR, name)
             if not os.path.isdir(d) or name.startswith("."):
                 continue
             
-            commits = self._run(f"cd {d} && git log --oneline -3 --format='%h|%s|%ar' 2>/dev/null")
+            commits = self._run(f"cd {d} && git log --oneline -5 --format='%h|%s|%at|%ar' 2>/dev/null")
             if commits:
-                for line in commits.split("\n")[:3]:
+                for line in commits.split("\n")[:5]:
                     parts = line.split("|")
-                    if len(parts) == 3:
+                    if len(parts) >= 4:
                         recent.append({
                             "project": name,
                             "hash": parts[0],
                             "message": parts[1],
-                            "ago": parts[2],
+                            "timestamp": int(parts[2]),
+                            "ago": parts[3],
                         })
-        return recent[:20]
+        # Sort by timestamp descending (newest first)
+        recent.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
+        return recent[:30]
 
 
 if __name__ == "__main__":

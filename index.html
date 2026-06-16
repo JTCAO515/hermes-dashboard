@@ -1039,6 +1039,8 @@ function render() {
 
   // Activity
   const recent = data.recent || [];
+  // Client-side safety sort: newest first
+  recent.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
   document.getElementById('activityContent').innerHTML = recent.length
     ? recent.slice(0, 15).map((a, i) => `
         <div class="activity-item" style="animation-delay:${i * 0.02}s">
@@ -1111,6 +1113,8 @@ function render() {
 
   // ── Task History ──
   const tasks = statusData.task_history || [];
+  // Client-side safety sort: newest first
+  tasks.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
   document.getElementById('taskContent').innerHTML = tasks.length
     ? tasks.slice(0, 20).map(t => {
         const type = t.type || 'task';
@@ -1135,6 +1139,8 @@ function render() {
 
   // ── Cross-Project Issues ──
   const issues = statusData.cross_project_issues || [];
+  // Client-side safety sort: newest first
+  issues.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
   document.getElementById('issueContent').innerHTML = issues.length
     ? issues.slice(0, 20).map(i => {
         const dotClass = i.type === 'dirty' ? 'issue-dot-dirty' : 'issue-dot-fix';
