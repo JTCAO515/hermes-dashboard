@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hermes Agent — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* =============================================
+   Linear Design System — Hermes Agent Dashboard
+   ============================================= */
+:root {
+  --bg-canvas: #08090a;
+  --bg-panel: #0f1011;
+  --bg-surface: #191a1b;
+  --bg-elevated: #1e1f22;
+  --bg-card: rgba(255,255,255,0.02);
+  --bg-card-hover: rgba(255,255,255,0.04);
+  
+  --text-primary: #f7f8f8;
+  --text-secondary: #d0d6e0;
+  --text-tertiary: #8a8f98;
+  --text-quaternary: #62666d;
+  
+  --accent: #5e6ad2;
+  --accent-bright: #7170ff;
+  --accent-hover: #828fff;
+  --accent-glow: rgba(113,112,255,0.15);
+  
+  --green: #27a644;
+  --green-bg: rgba(39,166,68,0.1);
+  --yellow: #d69e2e;
+  --yellow-bg: rgba(214,158,46,0.1);
+  --red: #ef4444;
+  --red-bg: rgba(239,68,68,0.1);
+  
+  --border: rgba(255,255,255,0.08);
+  --border-subtle: rgba(255,255,255,0.05);
+  --border-hover: rgba(255,255,255,0.12);
+  
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  --shadow-card: 0 0 0 1px var(--border);
+  --shadow-elevated: 0 0 0 1px var(--border), 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-glow: 0 0 24px var(--accent-glow);
+  
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  
+  --transition: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font);
+  font-feature-settings: 'cv01', 'ss03';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* Background grain */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.015'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50% { box-shadow: 0 0 20px 4px var(--accent-glow); }
+}
+
+@keyframes countUp {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Header */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(8,9,10,0.85);
+  backdrop-filter: blur(20px) saturate(1.5);
+  border-bottom: 1px solid var(--border-subtle);
+  animation: slideDown 0.4s ease-out;
+}
+
+.header-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright));
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(113,112,255,0.3);
+}
+
+.header-title {
+  font-size: 15px;
+  font-weight: 590;
+  letter-spacing: -0.165px;
+  color: var(--text-primary);
+}
+
+.header-subtitle {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  margin-left: 4px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.stat-pill .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.refresh-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-tertiary);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font);
+  font-feature-settings: 'cv01', 'ss03';
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.refresh-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-secondary);
+  border-color: var(--border-hover);
+}
+
+/* Container */
+.container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Loading */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 160px 20px;
+  color: var(--text-tertiary);
+  animation: fadeIn 0.5s ease-out;
+}
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent-bright);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-bottom: 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+}
+
+/* =============================================
+   SECTION — Hero Metrics
+   ============================================= */
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.hero-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition);
+  cursor: default;
+}
+.hero-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-elevated);
+}
+.hero-card:first-child {
+  background: linear-gradient(135deg, rgba(94,106,210,0.08), rgba(113,112,255,0.04));
+  border-color: rgba(94,106,210,0.25);
+}
+.hero-card:first-child:hover {
+  border-color: rgba(94,106,210,0.4);
+}
+
+.hero-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-quaternary);
+  margin-bottom: 8px;
+}
+
+.hero-value {
+  font-size: 28px;
+  font-weight: 510;
+  letter-spacing: -0.5px;
+  font-family: var(--font);
+  color: var(--text-primary);
+  animation: countUp 0.4s ease-out;
+}
+
+.hero-sub {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+.progress-track {
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 2px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease-out;
+}
+
+/* =============================================
+   SECTION — Two Column
+   ============================================= */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 1024px) {
+  .hero-grid { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .header-inner { padding: 0 16px; }
+  .container { padding: 16px; }
+  .header-stats { display: none; }
+}
+
+/* =============================================
+   CARD
+   ============================================= */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  animation: fadeIn 0.5s ease-out;
+  transition: border-color var(--transition);
+}
+.card:hover {
+  border-color: var(--border-hover);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 0;
+}
+.card-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-quaternary);
+}
+.card-icon {
+  font-size: 14px;
+  opacity: 0.6;
+}
+.card-body {
+  padding: 16px 20px 20px;
+}
+
+/* Metrics list */
+.metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.metric:last-child { border-bottom: none; }
+.metric-label {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  font-weight: 400;
+}
+.metric-value {
+  font-size: 13px;
+  font-weight: 510;
+  color: var(--text-secondary);
+}
+.metric-value.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Status dot */
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+.status-dot.green { background: var(--green); box-shadow: 0 0 8px rgba(39,166,68,0.4); }
+.status-dot.yellow { background: var(--yellow); }
+.status-dot.red { background: var(--red); }
+
+/* Service row */
+.service-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.service-row:last-child { border-bottom: none; }
+
+.service-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.service-icon {
+  width: 24px;
+  height: 24px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.service-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.service-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-quaternary);
+}
+
+.service-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+
+/* Project item */
+.project-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.project-item:last-child { border-bottom: none; }
+
+.project-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.project-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.project-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project-commit {
+  font-size: 11px;
+  color: var(--text-quaternary);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.project-branch {
+  display: inline-block;
+  padding: 1px 6px;
+  background: rgba(94,106,210,0.1);
+  color: var(--accent-bright);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+/* Activity */
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.activity-item:last-child { border-bottom: none; }
+
+.activity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  margin-top: 6px;
+  opacity: 0.4;
+}
+
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.activity-project {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent-bright);
+}
+
+.activity-time {
+  font-size: 11px;
+  color: var(--text-quaternary);
+  font-family: var(--font-mono);
+}
+
+.activity-msg {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 32px 20px;
+  color: var(--text-quaternary);
+  font-size: 13px;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 32px 20px 48px;
+  font-size: 11px;
+  color: var(--text-quaternary);
+  animation: fadeIn 0.8s ease-out;
+}
+
+.footer a {
+  color: var(--accent-bright);
+  text-decoration: none;
+}
+.footer a:hover {
+  color: var(--accent-hover);
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="logo">H</div>
+      <span class="header-title">Hermes Agent</span>
+      <span class="header-subtitle">Dashboard</span>
+    </div>
+    <div class="header-right">
+      <div class="header-stats">
+        <span class="stat-pill" id="pillUptime">
+          <span class="dot" style="background:var(--green);box-shadow:0 0 6px rgba(39,166,68,0.5)"></span>
+          <span id="headerUptime">—</span>
+        </span>
+        <span class="stat-pill" id="pillUpdated">
+          <span style="color:var(--text-quaternary)">↻</span>
+          <span id="headerUpdated">—</span>
+        </span>
+      </div>
+      <button class="refresh-btn" onclick="refresh()">↻ Refresh</button>
+    </div>
+  </div>
+</header>
+
+<!-- Main -->
+<div class="container" id="app">
+
+  <!-- Loading -->
+  <div class="loading-state" id="loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Connecting to Hermes telemetry…</div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" style="display:none">
+
+    <!-- Hero Metrics -->
+    <div class="hero-grid" id="heroMetrics"></div>
+
+    <!-- Two-Column: Hermes + Services -->
+    <div class="two-col">
+      <div class="card" id="hermesCard">
+        <div class="card-header">
+          <span class="card-title">Agent</span>
+          <span class="card-icon">🤖</span>
+        </div>
+        <div class="card-body" id="hermesContent">
+          <div class="loading-state" style="padding:20px"><div class="loading-text">Loading…</div></div>
+        </div>
+      </div>
+      <div class="card" id="servicesCard">
+        <div class="card-header">
+          <span class="card-title">Services</span>
+          <span class="card-icon">⚙️</span>
+        </div>
+        <div class="card-body" id="servicesContent">
+          <div class="loading-state" style="padding:20px"><div class="loading-text">Loading…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two-Column: Projects + Activity -->
+    <div class="two-col">
+      <div class="card" id="projectsCard">
+        <div class="card-header">
+          <span class="card-title">Projects</span>
+          <span class="card-icon">📁</span>
+        </div>
+        <div class="card-body" id="projectsContent">
+          <div class="loading-state" style="padding:20px"><div class="loading-text">Loading…</div></div>
+        </div>
+      </div>
+      <div class="card" id="activityCard">
+        <div class="card-header">
+          <span class="card-title">Recent Activity</span>
+          <span class="card-icon">📋</span>
+        </div>
+        <div class="card-body" id="activityContent">
+          <div class="loading-state" style="padding:20px"><div class="loading-text">Loading…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      Powered by <a href="#">Hermes Agent</a> &middot; Data refreshes every 30s
+    </div>
+  </div>
+</div>
+
+<script>
+const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? '/api/hermes'
+  : '/api/hermes';
+
+let data = null;
+
+function fmtBytes(b) {
+  if (!b || b === 0) return '0 B';
+  const u = ['B','KB','MB','GB'];
+  let i = 0, v = b;
+  while (v >= 1024 && i < u.length-1) { v /= 1024; i++; }
+  return v.toFixed(i > 1 ? 1 : 0) + ' ' + u[i];
+}
+
+function fmtDuration(s) {
+  if (!s) return '—';
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (d > 0) return `${d}d ${h}h ${m}m`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+async function refresh() {
+  document.getElementById('headerUpdated').textContent = 'updating…';
+  try {
+    const r = await fetch(API + '/all');
+    if (!r.ok) throw new Error('Network error');
+    data = await r.json();
+    render();
+  } catch(e) {
+    document.getElementById('headerUpdated').textContent = '⚠️ offline';
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.querySelectorAll('.card-body').forEach(el => {
+      el.innerHTML = '<div class="empty-state">Unable to connect to Hermes API. The server may be offline.</div>';
+    });
+  }
+}
+
+function render() {
+  if (!data) return;
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+
+  const now = new Date();
+  document.getElementById('headerUpdated').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+
+  const sys = data.system || {};
+  const hermes = data.hermes || {};
+
+  // Header uptime
+  document.getElementById('headerUptime').textContent = fmtDuration(sys.uptime);
+
+  // Hero metrics
+  const memPct = sys.memory ? ((sys.memory.used / sys.memory.total) * 100) : 0;
+  const diskPct = sys.disk ? ((sys.disk.used / sys.disk.total) * 100) : 0;
+  const cpuLoad = sys.cpu && sys.cpu.cores ? sys.cpu.load_1m : 0;
+  const cpuPct = sys.cpu && sys.cpu.cores ? Math.min((cpuLoad / sys.cpu.cores) * 100, 100) : 0;
+
+  function memColor(p) { return p > 80 ? 'var(--red)' : p > 60 ? 'var(--yellow)' : 'var(--green)'; }
+
+  document.getElementById('heroMetrics').innerHTML = `
+    <div class="hero-card">
+      <div class="hero-label">Uptime</div>
+      <div class="hero-value">${fmtDuration(sys.uptime)}</div>
+      <div class="hero-sub">${sys.hostname || '?'} &middot; ${sys.platform || ''}</div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-label">CPU Load</div>
+      <div class="hero-value" style="color:${cpuLoad < 1 ? 'var(--green)' : cpuLoad < 2 ? 'var(--yellow)' : 'var(--red)'}">${cpuLoad.toFixed(2)}</div>
+      <div class="hero-sub">${sys.cpu ? sys.cpu.cores : '?'} cores &middot; 1m average</div>
+      <div class="progress-track"><div class="progress-fill" style="width:${cpuPct}%;background:linear-gradient(90deg,var(--green),var(--accent))"></div></div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-label">Memory</div>
+      <div class="hero-value">${fmtBytes(sys.memory ? sys.memory.used : 0)}</div>
+      <div class="hero-sub">of ${fmtBytes(sys.memory ? sys.memory.total : 0)} &middot; ${memPct.toFixed(0)}% used</div>
+      <div class="progress-track"><div class="progress-fill" style="width:${memPct}%;background:${memColor(memPct)}"></div></div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-label">Disk</div>
+      <div class="hero-value">${fmtBytes(sys.disk ? sys.disk.used : 0)}</div>
+      <div class="hero-sub">of ${fmtBytes(sys.disk ? sys.disk.total : 0)} &middot; ${diskPct.toFixed(0)}% used</div>
+      <div class="progress-track"><div class="progress-fill" style="width:${diskPct}%;background:${memColor(diskPct)}"></div></div>
+    </div>
+  `;
+
+  // Hermes Agent
+  document.getElementById('hermesContent').innerHTML = `
+    <div class="metric">
+      <span class="metric-label">Model</span>
+      <span class="metric-value mono">${hermes.model || '?'}</span>
+    </div>
+    <div class="metric">
+      <span class="metric-label">Provider</span>
+      <span class="metric-value">${hermes.provider || '?'}</span>
+    </div>
+    <div class="metric">
+      <span class="metric-label">Skills</span>
+      <span class="metric-value">${(hermes.skills && hermes.skills.total) || 0}</span>
+    </div>
+    <div class="metric">
+      <span class="metric-label">Memory Entries</span>
+      <span class="metric-value">${hermes.memory_entries || 0}</span>
+    </div>
+    <div class="metric">
+      <span class="metric-label">Error Log</span>
+      <span class="metric-value mono">${fmtBytes(hermes.logs ? hermes.logs.error_log_bytes : 0)}</span>
+    </div>
+    <div class="metric">
+      <span class="metric-label">Gateway Log</span>
+      <span class="metric-value mono">${fmtBytes(hermes.logs ? hermes.logs.gateway_log_bytes : 0)}</span>
+    </div>
+    <div class="metric">
+      <span class="metric-label">Aesculap</span>
+      <span class="metric-value">${
+        hermes.aesculap && hermes.aesculap.installed
+          ? (hermes.aesculap.service_active
+            ? '<span class="status-dot green"></span>Active'
+            : '<span class="status-dot yellow"></span>Inactive')
+          : '<span style="color:var(--text-quaternary)">Not installed</span>'
+      }</span>
+    </div>
+  `;
+
+  // Services
+  const services = data.services || [];
+  document.getElementById('servicesContent').innerHTML = services.length
+    ? services.map((s, i) => {
+        const icons = ['🚀', '🔧', '📡', '⚡', '🛡️'];
+        const isOnline = (s.status || '').toLowerCase() === 'online';
+        return `
+          <div class="service-row" style="animation-delay:${i * 0.03}s">
+            <div class="service-info">
+              <div class="service-icon">${icons[i % icons.length]}</div>
+              <div>
+                <div class="service-name">${s.name || '?'}</div>
+                <div class="service-meta">${s.memory || ''}</div>
+              </div>
+            </div>
+            <span class="service-status">
+              <span class="status-dot ${isOnline ? 'green' : 'yellow'}"></span>
+              ${isOnline ? 'Online' : (s.status || '?')}
+            </span>
+          </div>
+        `;
+      }).join('')
+    : '<div class="empty-state">No services running</div>';
+
+  // Projects
+  const projects = data.projects || [];
+  document.getElementById('projectsContent').innerHTML = projects.length
+    ? projects.slice(0, 14).map((p, i) => `
+        <div class="project-item" style="animation-delay:${i * 0.02}s">
+          <div class="project-left">
+            <span class="project-dot"></span>
+            <span class="project-name">${p.name}</span>
+            <span class="project-commit">${p.git && p.git.last_commit ? p.git.last_commit.split(' ').slice(1).join(' ').substring(0,50) : ''}</span>
+          </div>
+          <div class="project-right">
+            ${p.git && p.git.branch ? `<span class="project-branch">${p.git.branch}</span>` : ''}
+          </div>
+        </div>
+      `).join('')
+    : '<div class="empty-state">No projects found</div>';
+
+  // Activity
+  const recent = data.recent || [];
+  document.getElementById('activityContent').innerHTML = recent.length
+    ? recent.slice(0, 15).map((a, i) => `
+        <div class="activity-item" style="animation-delay:${i * 0.02}s">
+          <span class="activity-dot"></span>
+          <div class="activity-content">
+            <div class="activity-head">
+              <span class="activity-project">${a.project}</span>
+              <span class="activity-time">${a.ago || ''}</span>
+            </div>
+            <div class="activity-msg">${a.message || ''}</div>
+          </div>
+        </div>
+      `).join('')
+    : '<div class="empty-state">No recent activity</div>';
+}
+
+// Initial load + auto-refresh
+refresh();
+setInterval(refresh, 30000);
+</script>
+</body>
+</html>
