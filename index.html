@@ -577,6 +577,135 @@ body::before {
   word-break: break-word;
 }
 
+/* ── Agent Identity (SOUL.md) ── */
+.soul-section {
+  font-size: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+.soul-section:last-child { border-bottom: none; }
+.soul-section-title { font-weight: 600; color: var(--accent-bright); margin-bottom: 2px; }
+.soul-meta { font-family: var(--font-mono); font-size: 10px; color: var(--text-quaternary); margin-top: 4px; }
+
+/* ── Memory entries ── */
+.memory-entry {
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  word-break: break-word;
+}
+.memory-entry:last-child { border-bottom: none; }
+.memory-key {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--accent-glow);
+  color: var(--accent-bright);
+  font-family: var(--font-mono);
+  margin-bottom: 3px;
+}
+
+/* ── Task timeline ── */
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+}
+.task-item:last-child { border-bottom: none; }
+.task-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+.task-content { flex: 1; min-width: 0; }
+.task-msg { color: var(--text-secondary); line-height: 1.4; }
+.task-meta { display: flex; gap: 6px; margin-top: 2px; flex-wrap: wrap; }
+.task-tag {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+}
+.task-tag-commit { background: rgba(94,106,210,0.15); color: #828fff; }
+.task-tag-cron { background: rgba(34,197,94,0.12); color: #22c55e; }
+.task-tag-fix { background: rgba(239,68,68,0.12); color: #ef4444; }
+.task-tag-dirty { background: rgba(234,179,8,0.12); color: #eab308; }
+.task-time { font-size: 10px; color: var(--text-quaternary); font-family: var(--font-mono); }
+
+/* ── Issue items ── */
+.issue-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+}
+.issue-item:last-child { border-bottom: none; }
+.issue-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.issue-dot-fix { background: #ef4444; }
+.issue-dot-dirty { background: #eab308; }
+.issue-project { font-weight: 600; color: var(--accent-bright); font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+.issue-msg { color: var(--text-secondary); line-height: 1.4; }
+.issue-time { font-size: 10px; color: var(--text-quaternary); font-family: var(--font-mono); margin-top: 2px; }
+
+/* ── Session badges ── */
+.session-badge {
+  display: inline-block;
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  margin: 1px 2px;
+}
+
+/* ── Collapsible text ── */
+.collapse-toggle {
+  cursor: pointer;
+  color: var(--accent-bright);
+  font-size: 11px;
+  margin-top: 4px;
+  user-select: none;
+}
+.collapse-toggle:hover { opacity: 0.8; }
+.collapse-body {
+  display: none;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+  margin-top: 4px;
+  padding: 8px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.collapse-body.open { display: block; }
+
+/* ── Status bar for last update ── */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0 0;
+  font-size: 10px;
+  color: var(--text-quaternary);
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 8px;
+}
+
 /* Empty state */
 .empty-state {
   text-align: center;
@@ -683,6 +812,49 @@ body::before {
           <span class="card-icon">📋</span>
         </div>
         <div class="card-body" id="activityContent">
+          <div class="loading-state" style="padding:20px"><div class="loading-text">Loading…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- New Cards: Memory + Task History + Agent Files -->
+    <div class="two-col">
+      <div class="card" id="soulCard">
+        <div class="card-header">
+          <span class="card-title">🧠 Agent Identity</span>
+          <span class="card-icon">📄</span>
+        </div>
+        <div class="card-body" id="soulContent">
+          <div class="loading-state" style="padding:20px"><div class="loading-text">Loading…</div></div>
+        </div>
+      </div>
+      <div class="card" id="memoryCard">
+        <div class="card-header">
+          <span class="card-title">🧬 Persistent Memory</span>
+          <span class="card-icon">💭</span>
+        </div>
+        <div class="card-body" id="memoryContent">
+          <div class="loading-state" style="padding:20px"><div class="loading-text">Loading…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card" id="taskCard">
+        <div class="card-header">
+          <span class="card-title">📋 Task History</span>
+          <span class="card-icon">🏗️</span>
+        </div>
+        <div class="card-body" id="taskContent">
+          <div class="loading-state" style="padding:20px"><div class="loading-text">Loading…</div></div>
+        </div>
+      </div>
+      <div class="card" id="issueCard">
+        <div class="card-header">
+          <span class="card-title">🔗 Cross-Project Issues</span>
+          <span class="card-icon">🛠️</span>
+        </div>
+        <div class="card-body" id="issueContent">
           <div class="loading-state" style="padding:20px"><div class="loading-text">Loading…</div></div>
         </div>
       </div>
@@ -881,6 +1053,103 @@ function render() {
         </div>
       `).join('')
     : '<div class="empty-state">No recent activity</div>';
+
+  // ── SOUL.md / Agent Identity ──
+  const soul = data.soul_md || {};
+  document.getElementById('soulContent').innerHTML = soul.version
+    ? `
+      <div class="soul-section">
+        <div class="soul-section-title">🤖 身份</div>
+        <div>认知与行动助手 · 中文工作语言 · 冷静精确预判克制可靠</div>
+        <div class="soul-meta">${soul.version}</div>
+      </div>
+      ${(soul.sections || []).map(s => `
+        <div class="soul-section">
+          <div class="soul-section-title">${s.title}</div>
+          <div>${s.summary}</div>
+        </div>
+      `).join('')}
+      <div class="status-bar">
+        <span>${(soul.total_lines || 0).toLocaleString()} lines</span>
+        <span class="collapse-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📖 Show full text</span>
+      </div>
+      <div class="collapse-body"></div>
+    `
+    : '<div class="empty-state">SOUL.md not available</div>';
+
+  // ── Memory ──
+  const statusData = data.dashboard_status || {};
+  const memories = statusData.memory || [];
+  const sessions = statusData.recent_sessions || [];
+
+  document.getElementById('memoryContent').innerHTML = `
+    <div style="margin-bottom:8px;font-size:11px;color:var(--text-quaternary)">
+      <span class="session-badge">${sessions.length} recent sessions</span>
+      <span class="session-badge">${memories.length} memory entries</span>
+    </div>
+    ${sessions.length ? `
+      <div style="margin-bottom:10px">
+        <div style="font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Recent Sessions</div>
+        ${sessions.slice(0, 5).map(s => `
+          <div class="memory-entry" style="padding:3px 0;font-size:11px">
+            <span class="memory-key">${s.source || '?'}</span>
+            ${(s.id || '').substring(0, 14)} &middot; ${s.messages} msgs
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+    ${memories.length ? `
+      <div style="font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Memory Keys</div>
+      ${memories.map(m => `
+        <div class="memory-entry">
+          <span class="memory-key">${m.key || '?'}</span>
+          ${(m.content || '').substring(0, 200)}
+        </div>
+      `).join('')}
+    ` : '<div class="empty-state">No memory entries cached. Run dashboard-status.py to populate.</div>'}
+  `;
+
+  // ── Task History ──
+  const tasks = statusData.task_history || [];
+  document.getElementById('taskContent').innerHTML = tasks.length
+    ? tasks.slice(0, 20).map(t => {
+        const type = t.type || 'task';
+        const icon = type === 'commit' ? '📝' : type === 'cron' ? '🔄' : '⚡';
+        const tagClass = type === 'commit' ? 'task-tag-commit' : type === 'cron' ? 'task-tag-cron' : '';
+        return `
+          <div class="task-item">
+            <span class="task-icon">${icon}</span>
+            <div class="task-content">
+              <div class="task-msg">${t.message || t.detail || '-'}</div>
+              <div class="task-meta">
+                ${t.project ? `<span class="task-tag ${tagClass}">${t.project}</span>` : ''}
+                <span class="task-tag ${tagClass}">${type}</span>
+                ${t.time ? `<span class="task-time">${t.time}</span>` : ''}
+                ${t.date ? `<span class="task-time">${t.date}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('')
+    : '<div class="empty-state">No task history cached. Cron job will populate this automatically.</div>';
+
+  // ── Cross-Project Issues ──
+  const issues = statusData.cross_project_issues || [];
+  document.getElementById('issueContent').innerHTML = issues.length
+    ? issues.slice(0, 20).map(i => {
+        const dotClass = i.type === 'dirty' ? 'issue-dot-dirty' : 'issue-dot-fix';
+        return `
+          <div class="issue-item">
+            <span class="issue-dot ${dotClass}"></span>
+            <div>
+              <div class="issue-project">${i.project || '?'}</div>
+              <div class="issue-msg">${i.message || '-'}</div>
+              <div class="issue-time">${i.hash ? i.hash.substring(0, 8) : ''} ${i.time || ''}</div>
+            </div>
+          </div>
+        `;
+      }).join('')
+    : '<div class="empty-state">No issues detected</div>';
 }
 
 // Initial load + auto-refresh
